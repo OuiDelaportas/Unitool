@@ -1,16 +1,17 @@
 import java.sql.*;
 
 public class Connector {
-	private Connection connection = null;                                             // The database connection object.
-    private Statement statement; 	
+	private static Connection connection = null;                                             // The database connection object.
+    private static Statement statement; 	
     private PreparedStatement PrepStmt;  
-    private ResultSet rsr;                                                    
+    private static ResultSet rsr;                                                    
 	
     private String uName;
     private String Pass;
     private String URL;
     //private String host = "localhost";
     private String database;
+    private static String ID;
     
     
     public Connector(String user, String passwd, String url, String DB) {
@@ -21,7 +22,7 @@ public class Connector {
     }
     
     /**
-     * Connects to the database. Needs to be more independent(ask the user for the uname and pass)
+     * Connects to the database. 
      */
     
     public boolean connectToDB() throws Exception {
@@ -39,7 +40,6 @@ public class Connector {
     
     /**
      * Checks the login credentials. Needs to be updated to match the DB that i will create some day.
-     * @param userType 
      */
     
     public String checkCredentials(String uname, String pass, String userType) {
@@ -51,6 +51,7 @@ public class Connector {
 			while(rsr.next()) {
 				if(uname.equals(rsr.getString("id")) && pass.equals(rsr.getString("password"))) {
 					userType = rsr.getString("user_type");
+					ID = uname;
 					rsr.close();
 					return userType;
 				}
@@ -62,7 +63,45 @@ public class Connector {
     	return userType;
     }
     
-    /**
+    public static void GetInfo(String userType) {
+    	try {
+			statement = connection.createStatement();
+			rsr = statement.executeQuery("SELECT * FROM user");
+			if(userType.equals("stud")) {
+				
+				while(rsr.next()) {
+					if(ID.equals(rsr.getString("id"))) {
+						MainStudentPage.setUsernameLabelText(rsr.getString("id"));
+						MainStudentPage.setSemesterLabelText(rsr.getString("semester"));
+						MainStudentPage.setSchoolLabelText(rsr.getString("school"));
+						break;
+					}
+				}
+			}else if(userType.equals("prof")) {
+				while(rsr.next()) {
+					if(ID.equals(rsr.getString("id"))) {
+						MainProfessorPage.setUsernameLabelText(rsr.getString("id"));
+						MainProfessorPage.setSchoolLabelText(rsr.getString("school"));
+						break;
+					}
+				}
+			}else {
+				while(rsr.next()) {
+					if(ID.equals(rsr.getString("id"))) {
+						MainSecretaryPage.setUsernameLabelText(rsr.getString("id"));
+						MainSecretaryPage.setSchoolLabelText(rsr.getString("school"));
+						break;
+					}
+				}
+			}
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
+    }
+    
+	/**
      * Reads Data. Still in alpha version.
      */
     
@@ -141,4 +180,5 @@ public class Connector {
             e.printStackTrace();
         }
     }
+    
 }

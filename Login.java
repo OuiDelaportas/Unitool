@@ -2,7 +2,7 @@ import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 
-public class Login {
+public class Login extends JFrame{
 
 	private JFrame frame;
 	private JTextField userField;
@@ -19,9 +19,8 @@ public class Login {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					Login window = new Login();
-					window.frame.setSize(425,425);
-					window.frame.setVisible(true);
+					Login frame = new Login();
+					frame.setSize(425,425);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -30,16 +29,9 @@ public class Login {
 	}
 
 	/**
-	 * Create the application.
-	 */
-	public Login() {
-		initialize();
-	}
-
-	/**
 	 * Initialize the contents of the frame.
 	 */
-	private void initialize() {
+	public Login() {
 		frame = new JFrame("Welcome to Unitool - Login");
 		frame.setVisible(true);
 		Point center = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint();

@@ -5,7 +5,8 @@ import javax.swing.*;
 public class MainProfessorPage extends JFrame {
 	
 	JLayeredPane layeredPane = new JLayeredPane();
-	
+	static JLabel usernameLabel = new JLabel();
+	static JLabel schoolLabel = new JLabel();
 
 	/**
 	 * Create the frame.
@@ -35,17 +36,23 @@ public class MainProfessorPage extends JFrame {
 		infoPanel.add(statsButton);
 		
 		JButton logoutButton = new JButton("\u0391\u03C0\u03BF\u03C3\u03CD\u03BD\u03B4\u03B5\u03C3\u03B7");
+		logoutButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+				Login frame = new Login();
+			}
+		});
 		logoutButton.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		logoutButton.setBounds(10, 466, 145, 23);
 		infoPanel.add(logoutButton);
 		
-		JLabel usernameLabel = new JLabel("Username");
+		Connector.GetInfo("prof");
+		
 		usernameLabel.setForeground(Color.WHITE);
 		usernameLabel.setFont(new Font("Tahoma", Font.PLAIN, 15));
 		usernameLabel.setBounds(10, 10, 110, 14);
 		infoPanel.add(usernameLabel);
 		
-		JLabel schoolLabel = new JLabel("School");
 		schoolLabel.setForeground(Color.WHITE);
 		schoolLabel.setFont(new Font("Tahoma", Font.PLAIN, 15));
 		schoolLabel.setBounds(10, 30, 110, 14);
@@ -110,4 +117,12 @@ public class MainProfessorPage extends JFrame {
 		layeredPane.repaint();
 		layeredPane.revalidate();
 	}
+
+	public static void setUsernameLabelText(String text) {
+		usernameLabel.setText(text);
+    }
+	
+	public static void setSchoolLabelText(String text) {
+		schoolLabel.setText(text);
+    }
 }
