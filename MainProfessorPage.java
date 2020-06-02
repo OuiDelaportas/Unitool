@@ -7,7 +7,12 @@ public class MainProfessorPage extends JFrame {
 	JLayeredPane layeredPane = new JLayeredPane();
 	static JLabel usernameLabel = new JLabel();
 	static JLabel schoolLabel = new JLabel();
-
+	JPanel coursePanel = new JPanel();
+	JPanel newsPanel = new JPanel();
+	JPanel optionsPanel = new JPanel();
+	JPanel chatPanel = new JPanel();
+	JPanel plannerPanel = new JPanel();
+	
 	/**
 	 * Create the frame.
 	 */
@@ -25,6 +30,7 @@ public class MainProfessorPage extends JFrame {
 		courseButton.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		courseButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				switchPanels(coursePanel);
 			}
 		});
 		courseButton.setBounds(10, 150, 145, 23);
@@ -66,25 +72,18 @@ public class MainProfessorPage extends JFrame {
 		mainpagePanel.add(layeredPane, "name_23958904944300");
 		layeredPane.setLayout(new CardLayout(0, 0));
 		
-		JPanel newsPanel = new JPanel();
 		newsPanel.setBackground(Color.GRAY);
 		layeredPane.add(newsPanel, "name_23978823487000");
 		
-		JPanel chatPanel = new JPanel();
 		chatPanel.setBackground(Color.GRAY);
 		layeredPane.add(chatPanel, "name_24018466741200");
 		
-		JButton btnNewButton = new JButton("New button");
-		chatPanel.add(btnNewButton);
-		
-		JPanel plannerPanel = new JPanel();
 		plannerPanel.setBackground(Color.GRAY);
 		layeredPane.add(plannerPanel, "name_24020787422800");
 		
-		JLabel lblNewLabel = new JLabel("New label");
-		plannerPanel.add(lblNewLabel);
+		coursePanel.setBackground(Color.GRAY);
+		layeredPane.add(coursePanel, "name_39667471417200");
 		
-		JPanel optionsPanel = new JPanel();
 		optionsPanel.setBackground(Color.DARK_GRAY);
 		optionsPanel.setBounds(850, 0, 165, 500);
 		getContentPane().add(optionsPanel);
@@ -101,11 +100,21 @@ public class MainProfessorPage extends JFrame {
 		optionsPanel.add(chatButton);
 		
 		JButton plannerButton = new JButton("Planner");
+		plannerButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				switchPanels(plannerPanel);
+			}
+		});
 		plannerButton.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		plannerButton.setBounds(10, 200, 145, 23);
 		optionsPanel.add(plannerButton);
 		
 		JButton newsButton = new JButton("News");
+		newsButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				switchPanels(newsPanel);
+			}
+		});
 		newsButton.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		newsButton.setBounds(10, 250, 145, 23);
 		optionsPanel.add(newsButton);

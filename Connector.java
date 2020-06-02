@@ -43,10 +43,8 @@ public class Connector {
      */
     
     public String checkCredentials(String uname, String pass, String userType) {
-    	//boolean flag = false;
     	try {
 			PrepStmt = connection.prepareStatement("SELECT id,password,user_type FROM user;");
-			//PrepStmt.setString(1, "AUDREY");
 			rsr = PrepStmt.executeQuery();
 			while(rsr.next()) {
 				if(uname.equals(rsr.getString("id")) && pass.equals(rsr.getString("password"))) {
@@ -67,26 +65,21 @@ public class Connector {
     	try {
 			statement = connection.createStatement();
 			rsr = statement.executeQuery("SELECT * FROM user");
-			if(userType.equals("stud")) {
-				
-				while(rsr.next()) {
+			while(rsr.next()) {
+				if(userType.equals("stud")) {
 					if(ID.equals(rsr.getString("id"))) {
 						MainStudentPage.setUsernameLabelText(rsr.getString("id"));
 						MainStudentPage.setSemesterLabelText(rsr.getString("semester"));
 						MainStudentPage.setSchoolLabelText(rsr.getString("school"));
 						break;
 					}
-				}
-			}else if(userType.equals("prof")) {
-				while(rsr.next()) {
+				}else if(userType.equals("prof")) {
 					if(ID.equals(rsr.getString("id"))) {
 						MainProfessorPage.setUsernameLabelText(rsr.getString("id"));
 						MainProfessorPage.setSchoolLabelText(rsr.getString("school"));
 						break;
 					}
-				}
-			}else {
-				while(rsr.next()) {
+				}else {
 					if(ID.equals(rsr.getString("id"))) {
 						MainSecretaryPage.setUsernameLabelText(rsr.getString("id"));
 						MainSecretaryPage.setSchoolLabelText(rsr.getString("school"));
@@ -94,35 +87,23 @@ public class Connector {
 					}
 				}
 			}
-			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}	
     }
     
-	/**
-     * Reads Data. Still in alpha version.
-     */
-    
-    public void readData() {
-			try {
-				statement = connection.createStatement();
-				rsr = statement.executeQuery("select * from " + database + ".actor");
-				while (rsr.next()) {
-					/**
-					 * Data gets inserted in User class;
-					 */
-					int Id = rsr.getInt("actor_id");
-					String name = rsr.getString("first_name");
-					String lname = rsr.getString("last_name");
-
-					System.out.println(String.format("Id: %d name: %5s  last name: %5s", Id, name, lname));
-				}
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-	}
+    public static ResultSet getCourses() {
+    	try {
+			PreparedStatement stmt = connection.prepareStatement("SELECT * FROM courses WHERE id = ?");
+			stmt.setString(1, ID);
+			rsr = stmt.executeQuery();
+    	} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return rsr;
+    }
     
     /**
      * Closes the statement so that it can execute a different query.

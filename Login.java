@@ -89,7 +89,7 @@ public class Login extends JFrame{
 		panel.add(lblNewLabel);
 	}
 	
-	public Action action = new AbstractAction() {
+	final public Action action = new AbstractAction() {
         public void actionPerformed(ActionEvent e)
         {
         	/**
@@ -105,7 +105,7 @@ public class Login extends JFrame{
 					CM.connectToDB();
 				}
 				String userType = "";
-				if(CM.checkCredentials(uname, pass, userType).equals("stud")) {               //PREPEI NA MPOUNE TA STOIXEIA APO TO DATABASE GIA NA GINEI O ELEGXOS
+				if(CM.checkCredentials(uname, pass, userType).equals("stud")) {            
 					//JOptionPane.showMessageDialog(null, "Congratulations on logging in!");
 					/**
 					 * The main student panel becomes visible

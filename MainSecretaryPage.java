@@ -7,6 +7,13 @@ public class MainSecretaryPage extends JFrame {
 	JLayeredPane layeredPane = new JLayeredPane();
 	static JLabel usernameLabel = new JLabel();
 	static JLabel schoolLabel = new JLabel();
+	JPanel optionsPanel = new JPanel();
+	JPanel formPanel = new JPanel();
+	JPanel requestPanel = new JPanel();
+	JPanel gradePanel = new JPanel();
+	JPanel plannerPanel = new JPanel();
+	JPanel chatPanel = new JPanel();
+	JPanel newsPanel = new JPanel();
 	
 	/**
 	 * Create the frame.
@@ -31,16 +38,31 @@ public class MainSecretaryPage extends JFrame {
 		infoPanel.add(statsButton);
 		
 		JButton gradeButton = new JButton("\u0392\u03B1\u03B8\u03BC\u03BF\u03BB\u03BF\u03B3\u03AF\u03B5\u03C2");
+		gradeButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				switchPanels(gradePanel);
+			}
+		});
 		gradeButton.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		gradeButton.setBounds(10, 200, 145, 23);
 		infoPanel.add(gradeButton);
 		
 		JButton selectionButton = new JButton("\u0394\u03B7\u03BB\u03CE\u03C3\u03B5\u03B9\u03C2");
+		selectionButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				switchPanels(formPanel);
+			}
+		});
 		selectionButton.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		selectionButton.setBounds(10, 250, 145, 23);
 		infoPanel.add(selectionButton);
 		
 		JButton requestButton = new JButton("\u0391\u03B9\u03C4\u03AE\u03C3\u03B5\u03B9\u03C2");
+		requestButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				switchPanels(requestPanel);
+			}
+		});
 		requestButton.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		requestButton.setBounds(10, 300, 145, 23);
 		infoPanel.add(requestButton);
@@ -56,6 +78,39 @@ public class MainSecretaryPage extends JFrame {
 		logoutButton.setBounds(10, 466, 145, 23);
 		infoPanel.add(logoutButton);
 		
+		JPanel mainpagePanel = new JPanel();
+		mainpagePanel.setBounds(165, 0, 685, 500);
+		getContentPane().add(mainpagePanel);
+		mainpagePanel.setLayout(new CardLayout(0, 0));
+		
+		mainpagePanel.add(layeredPane, "name_23958904944300");
+		layeredPane.setLayout(new CardLayout(0, 0));
+		
+		newsPanel.setBackground(Color.GRAY);
+		layeredPane.add(newsPanel, "name_23978823487000");
+		newsPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		
+		chatPanel.setBackground(Color.GRAY);
+		layeredPane.add(chatPanel, "name_24018466741200");
+		
+		plannerPanel.setBackground(Color.GRAY);
+		layeredPane.add(plannerPanel, "name_24020787422800");
+		
+		gradePanel.setBackground(Color.GRAY);
+		layeredPane.add(gradePanel, "name_38718138169000");
+		
+		requestPanel.setBackground(Color.GRAY);
+		layeredPane.add(requestPanel, "name_38762156049700");
+		
+		formPanel.setBackground(Color.GRAY);
+		layeredPane.add(formPanel, "name_38765711160400");
+		formPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		
+		optionsPanel.setBackground(Color.DARK_GRAY);
+		optionsPanel.setBounds(850, 0, 165, 500);
+		getContentPane().add(optionsPanel);
+		optionsPanel.setLayout(null);
+		
 		Connector.GetInfo("sec");
 		
 		usernameLabel.setForeground(Color.WHITE);
@@ -67,32 +122,6 @@ public class MainSecretaryPage extends JFrame {
 		schoolLabel.setFont(new Font("Tahoma", Font.PLAIN, 15));
 		schoolLabel.setBounds(10, 30, 110, 14);
 		infoPanel.add(schoolLabel);
-		
-		JPanel mainpagePanel = new JPanel();
-		mainpagePanel.setBounds(165, 0, 685, 500);
-		getContentPane().add(mainpagePanel);
-		mainpagePanel.setLayout(new CardLayout(0, 0));
-		
-		mainpagePanel.add(layeredPane, "name_23958904944300");
-		layeredPane.setLayout(new CardLayout(0, 0));
-		
-		JPanel newsPanel = new JPanel();
-		newsPanel.setBackground(Color.GRAY);
-		layeredPane.add(newsPanel, "name_23978823487000");
-		
-		JPanel chatPanel = new JPanel();
-		chatPanel.setBackground(Color.GRAY);
-		layeredPane.add(chatPanel, "name_24018466741200");
-		
-		JPanel plannerPanel = new JPanel();
-		plannerPanel.setBackground(Color.GRAY);
-		layeredPane.add(plannerPanel, "name_24020787422800");
-		
-		JPanel optionsPanel = new JPanel();
-		optionsPanel.setBackground(Color.DARK_GRAY);
-		optionsPanel.setBounds(850, 0, 165, 500);
-		getContentPane().add(optionsPanel);
-		optionsPanel.setLayout(null);
 		
 		JButton chatButton = new JButton("Chat");
 		chatButton.addActionListener(new ActionListener() {
