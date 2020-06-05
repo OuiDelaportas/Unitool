@@ -2,37 +2,102 @@
 public class Course {
 
 	private String name;
-	private String id;
-	private String professor;
-	
-	
-	public Course(String name, String id, String professor) {
-		/**
-		 * Prepei na mpoun semester, people that passed, people that were examined, school, dept, major, isws kai id foithth. 
-		 */
+	private String ID;
+	private String professorID;
+	private String cid;
+	private String grade;
+	private String semester;
+	private String dept;
+	private float examined;
+	private float passed;
+	private String school;
+
+	public Course(String name, String id, String professor, String cid, String grade, String semester, String dept, float passed, float examined, String school) {
 		this.name = name;
-		this.id = id;
-		this.professor = professor;
+		this.ID = id;
+		this.professorID = professor;
+		this.cid = cid;
+		this.grade = grade;
+		this.semester = semester;
+		this.dept = dept;
+		this.passed = passed;
+		this.examined = examined;
+		this.school = school;
 	}
 	
+	public float getExamined() {
+		return examined;
+	}
+
+	public void setExamined(int examined) {
+		this.examined = examined;
+	}
+
+	public float getPassed() {
+		return passed;
+	}
+
+	public void setPassed(int passed) {
+		this.passed = passed;
+	}
 	
+	public String getSchool() {
+		return school;
+	}
+
+	public void setSchool(String school) {
+		this.school = school;
+	}
+
+	public String getDept() {
+		return dept;
+	}
+
+	public void setDept(String dept) {
+		this.dept = dept;
+	}
+
+	public String getSemester() {
+		return semester;
+	}
+
+	public void setSemester(String semester) {
+		this.semester = semester;
+	}
+
+	public String getGrade() {
+		return grade;
+	}
+
+	public void setGrade(String grade) {
+		this.grade = grade;
+	}
+
+	public String getCid() {
+		return cid;
+	}
+
+	public void setCid(String cid) {
+		this.cid = cid;
+	}
+
 	public String getcName() {
 		return name;
 	}
 	public void setcName(String name) {
 		this.name = name;
 	}
-	public String getcId() {
-		return id;
+	public String getId() {
+		return ID;
 	}
-	public void setcId(String id) {
-		this.id = id;
+	public void setId(String id) {
+		this.ID = id;
 	}
 	public String getcProfessor() {
-		return professor;
+		return professorID;
 	}
 	public void setcProfessor(String professor) {
-		this.professor = professor;
+		this.professorID = professor;
 	}
 	
 	

@@ -1,9 +1,13 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
 public class MainStudentPage extends JFrame {
 	
@@ -20,6 +24,18 @@ public class MainStudentPage extends JFrame {
 	JPanel plannerPanel = new JPanel();
 	JPanel chatPanel = new JPanel();
 	JPanel newsPanel = new JPanel();
+	JPanel statsPanel = new JPanel();
+	JTextArea textArea = new JTextArea();
+	Course newCourse = null;
+	ArrayList <Course> courses = new ArrayList();
+	JTable gradeTable = null;
+	JTable courseTable = null;
+	JTable formTable = null;
+	JTable statsTable = null;
+	ResultSet rsr;
+	User newUser = null;
+	ArrayList <User> users = new ArrayList();
+	ArrayList <String> courseSelected = new ArrayList();
 	
 	/**
 	 * Create the frame.
@@ -36,7 +52,7 @@ public class MainStudentPage extends JFrame {
 		getContentPane().add(infoPanel);
 		infoPanel.setLayout(null);
 		
-		JButton courseButton = new JButton("\u03A4\u03B1 \u03BC\u03B1\u03B8\u03AE\u03BC\u03B1\u03C4\u03AC \u03BC\u03BF\u03C5");
+		JButton courseButton = new JButton("Τα μαθήματα μου");
 		courseButton.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		courseButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -46,38 +62,113 @@ public class MainStudentPage extends JFrame {
 		courseButton.setBounds(10, 150, 145, 23);
 		infoPanel.add(courseButton);
 		
-		JButton statsButton = new JButton("\u03A3\u03C4\u03B1\u03C4\u03B9\u03C3\u03C4\u03B9\u03BA\u03AC");
+		JButton statsButton = new JButton("Στατιστικά");
+		statsButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				switchPanels(statsPanel);
+			}
+		});
 		statsButton.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		statsButton.setBounds(10, 200, 145, 23);
 		infoPanel.add(statsButton);
 		/*
-		 * The course name list is fetched.
+		 * The grade list is fetched.
 		 */
-		JList <String> list = new JList<String>();
-		DefaultListModel <String> DLM = new DefaultListModel<String>();
-		Connector.getCourses();
-		ResultSet rsr;
 		rsr = Connector.getCourses();
+		DefaultTableModel gradeTableModel = new DefaultTableModel(new Object[] {"Όνομα Μαθήματος", "Βαθμός Μαθήματος", "Εξάμηνο"}, 0);
+		DefaultTableModel courseTableModel = new DefaultTableModel(new Object[] {"Όνομα Μαθήματος",  "Εξάμηνο"}, 0);
+		DefaultTableModel formTableModel = new DefaultTableModel(new Object[] {"Όνομα Μαθήματος", "Εξάμηνο", "Διδάσκων"}, 0);
+		DefaultTableModel statsTableModel = new DefaultTableModel(new Object[] {"Όνομα Μαθήματος", "Εξάμηνο", "Διδάσκων"}, 0);
 		try {
 			while(rsr.next()) {
-				DLM.addElement(rsr.getString("course_name"));
+				if(rsr.getString("school").equals(schoolLabel.getText())) {
+					newCourse = new Course(rsr.getString("course_name"), rsr.getString("id"), rsr.getString("prof_id"), rsr.getString("course_id"), 
+							Connector.getGrades(rsr.getString("course_id")), rsr.getString("semester"), rsr.getString("dept"), rsr.getFloat("passed"),
+							rsr.getFloat("examined"), rsr.getString("school"));
+					courses.add(newCourse);
+					if(usernameLabel.getText().equals(newCourse.getId())) {
+						gradeTableModel.addRow(new Object[] {newCourse.getcName(), newCourse.getGrade(), newCourse.getSemester()});;
+						courseTableModel.addRow(new Object[] {newCourse.getcName(), newCourse.getSemester()});
+					}
+				}
 			}
-		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		try {
 			rsr.close();
-		} catch (SQLException e1) {
+		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			e.printStackTrace();
+		}
+		gradeTable = new JTable(gradeTableModel) {
+			public boolean isCellEditable(int row,int column){
+			return false;
+			}
+		};
+		courseTable = new JTable(courseTableModel) {
+			public boolean isCellEditable(int row,int column){
+			return false;
+			}
+		};
+		
+		rsr = Connector.getUsers();	
+		try {
+			while(rsr.next()) {
+					newUser = new User(rsr.getString("usname"), rsr.getString("first_name"), rsr.getString("last_name"), rsr.getString("id"), 
+							rsr.getString("user_type"), rsr.getString("semester"), rsr.getString("school"), rsr.getString("dept"));
+					users.add(newUser);
+			}
+			rsr.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		/*
-		 * Edw prepei na ginei klhsh synarthshs gia na ginoun fetch oi vathmoi me getselection gia onoma mathimatos kai id mathiti to opoio einai etoimo sthn connector.
+		 * Secretary's office has to update the list with courses
 		 */
-		list.setModel(DLM);
+		for(Course c: courses) {
+			statsTableModel.addRow(new Object[] {c.getcName(), c.getSemester(), getProfName(users, c.getcProfessor())});
+			if(c.getId().equals(usernameLabel.getText()) && c.getSemester().compareTo(semesterLabel.getText())<=0) {
+				formTableModel.addRow(new Object[] {c.getcName(), c.getSemester(), getProfName(users, c.getcProfessor())});
+			}
+		}
+		formTable = new JTable(formTableModel) {
+			public boolean isCellEditable(int row,int column){
+			return false;
+			}
+		};
+		formTable.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				String value = formTable.getValueAt(formTable.getSelectedRow(), 0).toString();
+				if(!courseSelected.contains(value)) {
+					courseSelected.add(value);
+				}
+			}
+		});
 		
-		JButton gradeButton = new JButton("\u0392\u03B1\u03B8\u03BC\u03BF\u03BB\u03BF\u03B3\u03AF\u03B5\u03C2");
+		statsTable = new JTable(statsTableModel) {
+			public boolean isCellEditable(int row,int column){
+			return false;
+			}
+		};
+		statsTable.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				String value = statsTable.getValueAt(statsTable.getSelectedRow(), 0).toString();
+				for(Course c: courses) {
+					if(c.getcName().equals(value)) {
+						StatsFrame sFrame = new StatsFrame(value, c.getPassed(), c.getExamined());
+						sFrame.setSize(450, 250);
+						sFrame.setVisible(true);
+						break;
+					}
+				}
+				
+			}
+		});
+		
+		/*
+		 * Buttons and labels customized
+		 */
+		JButton gradeButton = new JButton("Βαθμολογίες");
 		gradeButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				switchPanels(gradePanel);
@@ -111,6 +202,7 @@ public class MainStudentPage extends JFrame {
 		logoutButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				dispose();
+				Connector.close();
 				Login frame = new Login();
 			}
 		});
@@ -152,20 +244,89 @@ public class MainStudentPage extends JFrame {
 		
 		coursePanel.setBackground(Color.GRAY);
 		layeredPane.add(coursePanel, "name_39396003979000");
+		coursePanel.setLayout(null);
+		
+		JScrollPane scrollPane_1 = new JScrollPane(courseTable);
+		scrollPane_1.setBounds(10, 11, 665, 478);
+		coursePanel.add(scrollPane_1);
 		
 		gradePanel.setBackground(Color.GRAY);
 		layeredPane.add(gradePanel, "name_38718138169000");
 		gradePanel.setLayout(null);
 		
-		JScrollPane scrollPane = new JScrollPane(list);
+		JScrollPane scrollPane = new JScrollPane(gradeTable);
 		scrollPane.setBounds(10, 11, 665, 478);
 		gradePanel.add(scrollPane);
+		requestPanel.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
 		
 		requestPanel.setBackground(Color.GRAY);
 		layeredPane.add(requestPanel, "name_38762156049700");
+		requestPanel.setLayout(null);
+		
+		textArea.setBounds(10, 363, 665, 126);
+		requestPanel.add(textArea);
+		
+		JButton cButton = new JButton("Πιστοποιητικό Αναλυτικής Βαθμολογίας");
+		cButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				for(User u: users) {
+					if(u.getId().equals(usernameLabel.getText())) {
+						Connector.updateRequests(cButton.getText(), u.getSchool(), textArea.getText(), 1);
+					}
+				}
+				textArea.setText(null);
+			}
+		});
+		cButton.setFont(new Font("Tahoma", Font.PLAIN, 15));
+		cButton.setBounds(10, 90, 300, 65);
+		requestPanel.add(cButton);
+		
+		JButton gButton = new JButton("Πιστοποιητικό Σπουδών");
+		gButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				for(User u: users) {
+					if(u.getId().equals(usernameLabel.getText())) {
+						Connector.updateRequests(gButton.getText(), u.getSchool(), textArea.getText(), 2);
+					}
+				}
+				textArea.setText(null);
+			}
+		});
+		gButton.setFont(new Font("Tahoma", Font.PLAIN, 15));
+		gButton.setBounds(360, 90, 315, 65);
+		requestPanel.add(gButton);
+		
+		JLabel lblNewLabel = new JLabel("Λεπτομέρειες - Σχόλια");
+		lblNewLabel.setFont(new Font("Tahoma", Font.PLAIN, 15));
+		lblNewLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		lblNewLabel.setOpaque(true);
+		lblNewLabel.setBounds(185, 310, 250, 35);
+		requestPanel.add(lblNewLabel);
 		
 		formPanel.setBackground(Color.GRAY);
 		layeredPane.add(formPanel, "name_38765711160400");
+		formPanel.setLayout(null);
+		
+		JScrollPane scrollPane_2 = new JScrollPane(formTable);
+		scrollPane_2.setBounds(10, 11, 665, 440);
+		formPanel.add(scrollPane_2);
+		
+		JButton formButton = new JButton("Επιβεβαίωση Δήλωσης");
+		formButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Connector.updateForms(courseSelected);
+			}
+		});
+		formButton.setBounds(222, 462, 232, 27);
+		formPanel.add(formButton);
+		
+		statsPanel.setBackground(Color.GRAY);
+		layeredPane.add(statsPanel, "name_4371977862900");
+		statsPanel.setLayout(null);
+		
+		JScrollPane scrollPane_3 = new JScrollPane(statsTable);
+		scrollPane_3.setBounds(10, 11, 665, 478);
+		statsPanel.add(scrollPane_3);
 		
 		JPanel optionsPanel = new JPanel();
 		optionsPanel.setBackground(Color.DARK_GRAY);
@@ -223,4 +384,17 @@ public class MainStudentPage extends JFrame {
 	public static void setSchoolLabelText(String text) {
 		schoolLabel.setText(text);
     }
+	
+	public String getProfName(ArrayList <User> users, String id) {
+		for(User u: users) {
+			if(u.getId().equals(id)) {
+				return u.getLname();
+			}
+		}
+		return null;
+	}
+	
+	 public boolean isCellEditable(int row, int column) {
+	       return false;
+	 }
 }

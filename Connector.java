@@ -1,4 +1,5 @@
 import java.sql.*;
+import java.util.ArrayList;
 
 public class Connector {
 	private static Connection connection = null;                                             // The database connection object.
@@ -92,17 +93,108 @@ public class Connector {
 			e.printStackTrace();
 		}	
     }
-    
-    public static ResultSet getCourses() {
+    /*
+     * Fetches data about users
+     */
+    public static ResultSet getUsers() {
     	try {
-			PreparedStatement stmt = connection.prepareStatement("SELECT * FROM courses WHERE id = ?");
-			stmt.setString(1, ID);
-			rsr = stmt.executeQuery();
+			Statement stmt = connection.createStatement();
+			rsr = stmt.executeQuery("SELECT * FROM user");
     	} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return rsr;
+	}
+    /*
+     * Fetches course names to show
+     */
+    public static ResultSet getCourses() {
+    	try {
+			Statement stmt = connection.createStatement();
+			rsr = stmt.executeQuery("SELECT * FROM courses");
+    	} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return rsr;
+    }
+    /*
+     * Gets grades depending on user id and course id
+     */
+    public static String getGrades(String courseID) {
+    	String gr = null ;
+    	try {
+			PreparedStatement stmt = connection.prepareStatement("SELECT * FROM grades WHERE id = ? AND course_id = ?");
+			stmt.setString(1, ID);
+			stmt.setString(2,  courseID);
+			rsr = stmt.executeQuery();
+			while(rsr.next()) {
+				gr = rsr.getString("grade");
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	return gr;
+    }
+    /*
+     * Updates the form table in the db according to the courses the student chose
+     */
+    public static void updateForms(ArrayList <String> courses) {
+    	int rowCounter = 0;
+		try {
+			for(String i: courses) {
+				rowCounter++;
+				PreparedStatement stmt = connection.prepareStatement("UPDATE forms SET course" + rowCounter +"=? WHERE id=?");
+				stmt.setString(1, i);
+				stmt.setString(2, ID);
+				stmt.executeUpdate();
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+    /*
+     * Updates the requests table in the db according to the certification the student chose
+     */
+    public static void updateRequests(String button, String school, String text, int i) {
+    	int rowCounter = 0;
+		try {
+				PreparedStatement stmt = connection.prepareStatement("UPDATE requests SET school=?, request?=?, info=? WHERE id=?");
+				stmt.setString(1, school);
+				stmt.setInt(2, i);
+				stmt.setString(3, button);
+				stmt.setString(4, text);
+				stmt.setString(5, ID);
+				stmt.executeUpdate();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+    
+    public static ResultSet getForms() {
+    	try {
+			Statement stmt = connection.createStatement();
+			rsr = stmt.executeQuery("SELECT * FROM forms");
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	return rsr;
+    }
+    
+    public static ResultSet getRequests() {
+    	try {
+			Statement stmt = connection.createStatement();
+			rsr = stmt.executeQuery("SELECT * FROM requests");
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	return rsr;
     }
     
     /**
@@ -147,7 +239,7 @@ public class Connector {
      * Close the connection to the DB
      */
     
-    public static void close(Connection connection)
+    public static void close()
     {
         try
         {
@@ -160,6 +252,5 @@ public class Connector {
         {
             e.printStackTrace();
         }
-    }
-    
+    }  
 }

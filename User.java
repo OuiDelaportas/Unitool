@@ -8,8 +8,9 @@ public class User {
 	private String pass;
 	private String mail;
 	private String school;
+	private String dept;
 	
-	public User(String string, String string2, String string3, String string4, String string5, String string6, String string7) {
+	public User(String string, String string2, String string3, String string4, String string5, String string6, String string7, String string8) {
 		uname = string;
 		name = string2;
 		lname = string3;
@@ -17,6 +18,55 @@ public class User {
 		pass = string5;
 		mail = string6;
 		school = string7;
+		dept = string8;
+	}
+
+	public String getUname() {
+		return uname;
+	}
+
+	public void setUname(String uname) {
+		this.uname = uname;
+	}
+
+	public String getLname() {
+		return lname;
+	}
+
+	public void setLname(String lname) {
+		this.lname = lname;
+	}
+
+	public String getPass() {
+		return pass;
+	}
+
+	public void setPass(String pass) {
+		this.pass = pass;
+	}
+
+	public String getMail() {
+		return mail;
+	}
+
+	public void setMail(String mail) {
+		this.mail = mail;
+	}
+
+	public String getSchool() {
+		return school;
+	}
+
+	public void setSchool(String school) {
+		this.school = school;
+	}
+
+	public String getDept() {
+		return dept;
+	}
+
+	public void setDept(String dept) {
+		this.dept = dept;
 	}
 
 	public String getName() {

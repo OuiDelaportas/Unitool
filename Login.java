@@ -113,6 +113,15 @@ public class Login extends JFrame{
 					frame.setVisible(false);
 					MainStudentPage studPage = new MainStudentPage();
 					studPage.setVisible(true);
+					studPage.addWindowListener(new WindowAdapter()
+					{
+					    @Override
+					    public void windowClosing(WindowEvent e)
+					    {
+					        super.windowClosing(e);
+					        Connector.close();
+					    }
+					});
 				}else if(CM.checkCredentials(uname, pass, userType).equals("prof")) {
 					/**
 					 * MPAINEI PANEL GIA PROFESSORIA
@@ -120,6 +129,15 @@ public class Login extends JFrame{
 					frame.setVisible(false);
 					MainProfessorPage profPage = new MainProfessorPage();
 					profPage.setVisible(true);
+					profPage.addWindowListener(new WindowAdapter()
+					{
+					    @Override
+					    public void windowClosing(WindowEvent e)
+					    {
+					        super.windowClosing(e);
+					        Connector.close();
+					    }
+					});
 				}else if(CM.checkCredentials(uname, pass, userType).equals("sec")) {
 					/**
 					 * MPAINEI PANEL GIA GRAMMATEIA
@@ -127,6 +145,15 @@ public class Login extends JFrame{
 					frame.setVisible(false);
 					MainSecretaryPage secPage = new MainSecretaryPage();
 					secPage.setVisible(true);
+					secPage.addWindowListener(new WindowAdapter()
+					{
+					    @Override
+					    public void windowClosing(WindowEvent e)
+					    {
+					        super.windowClosing(e);
+					        Connector.close();
+					    }
+					});
 				}else if(userType.equals("")){
 					JOptionPane.showMessageDialog(null, "Error on login!\nPlease try again!");
 				}

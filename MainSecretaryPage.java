@@ -1,6 +1,11 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 
 public class MainSecretaryPage extends JFrame {
 	
@@ -14,11 +19,23 @@ public class MainSecretaryPage extends JFrame {
 	JPanel plannerPanel = new JPanel();
 	JPanel chatPanel = new JPanel();
 	JPanel newsPanel = new JPanel();
+	JPanel statsPanel = new JPanel();
+	ArrayList <Course> courses = new ArrayList();
+	JTable courseTable = null;
+	JTable statsTable = null;
+	JTable requestTable = null;
+	JTable formTable = null;
+	ResultSet rsr = null;
+	Course newCourse = null;
+	User newUser = null;
+	ArrayList <User> users = new ArrayList();
 	
 	/**
 	 * Create the frame.
 	 */
 	public MainSecretaryPage() {
+		Connector.GetInfo("sec");
+		
 		setBounds(new Rectangle(0, 0, 1030, 540));
 		getContentPane().setLayout(null);
 		
@@ -31,6 +48,7 @@ public class MainSecretaryPage extends JFrame {
 		JButton statsButton = new JButton("\u03A3\u03C4\u03B1\u03C4\u03B9\u03C3\u03C4\u03B9\u03BA\u03AC");
 		statsButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				switchPanels(statsPanel);
 			}
 		});
 		statsButton.setFont(new Font("Tahoma", Font.PLAIN, 13));
@@ -71,6 +89,7 @@ public class MainSecretaryPage extends JFrame {
 		logoutButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				dispose();
+				Connector.close();
 				Login frame = new Login();
 			}
 		});
@@ -98,20 +117,155 @@ public class MainSecretaryPage extends JFrame {
 		
 		gradePanel.setBackground(Color.GRAY);
 		layeredPane.add(gradePanel, "name_38718138169000");
+		gradePanel.setLayout(null);
+		
+		rsr = Connector.getUsers();
+		DefaultTableModel courseTableModel = new DefaultTableModel(new Object[] {"Όνομα Μαθήματος",  "Εξάμηνο"}, 0);
+		DefaultTableModel statsTableModel = new DefaultTableModel(new Object[] {"Όνομα Μαθήματος", "Εξάμηνο", "Διδάσκων"}, 0);
+		DefaultTableModel formTableModel = new DefaultTableModel(new Object[] {"ΑΜ Φοιτητή", "Μάθημα", "Μάθημα", "Μάθημα", "Μάθημα", "Μάθημα", "Μάθημα", "Μάθημα", "Μάθημα"}, 0);
+		DefaultTableModel requestTableModel = new DefaultTableModel(new Object[] {"ΑΜ Φοιτητή", "Είδος Βεβαίωσης", "Είδος Βεβαίωσης"}, 0);
+		try {
+			while(rsr.next()) {
+					newUser = new User(rsr.getString("usname"), rsr.getString("first_name"), rsr.getString("last_name"), rsr.getString("id"), 
+							rsr.getString("user_type"), rsr.getString("semester"), rsr.getString("school"), rsr.getString("dept"));
+					users.add(newUser);
+			}
+			rsr.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		rsr = Connector.getCourses();
+		try {
+			while(rsr.next()) {
+					newCourse = new Course(rsr.getString("course_name"), rsr.getString("id"), rsr.getString("prof_id"), rsr.getString("course_id"), 
+							Connector.getGrades(rsr.getString("course_id")), rsr.getString("semester"), rsr.getString("dept"), rsr.getFloat("passed"),
+							rsr.getFloat("examined"), rsr.getString("school"));
+					courses.add(newCourse);
+				if(schoolLabel.getText().equals(newCourse.getSchool())) {
+					courseTableModel.addRow(new Object[] {newCourse.getcName(), newCourse.getSemester()});
+				}
+			}
+			rsr.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		rsr = Connector.getForms();
+		try {
+			while(rsr.next()) {
+				for(User u: users) {
+					if(u.getId().equals(rsr.getString("id"))) {
+						if(u.getSchool().equals(schoolLabel.getText())) {
+							formTableModel.addRow(new Object[] {rsr.getString("id"), rsr.getString("course1"), rsr.getString("course2"), rsr.getString("course3")
+									, rsr.getString("course4"), rsr.getString("course5"), rsr.getString("course6"), rsr.getString("course7"), rsr.getString("course8")});
+						}
+					}
+				}
+			}
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		formTable = new JTable(formTableModel) {
+			public boolean isCellEditable(int row,int column){
+			return false;
+			}
+			public String getToolTipText(MouseEvent e) {
+		        String tip = null;
+		        java.awt.Point p = e.getPoint();
+		        int rowIndex = rowAtPoint(p);
+		        int colIndex = columnAtPoint(p);
+		        int realColumnIndex = convertColumnIndexToModel(colIndex);
+		        tip = (String) formTableModel.getValueAt(rowIndex, colIndex);
+		        		
+		        return tip;
+			}
+		};
+		
+		courseTable = new JTable(courseTableModel) {
+			public boolean isCellEditable(int row,int column){
+			return false;
+			}
+		};
+		/*
+		 * Statistics panel is filled
+		 */
+		for(Course c: courses) {
+			if(schoolLabel.getText().equals(c.getSchool())) {
+				statsTableModel.addRow(new Object[] {c.getcName(), c.getSemester(), getProfName(users, c.getcProfessor())});
+			}
+		}
+		courseTable = new JTable(courseTableModel) {
+			public boolean isCellEditable(int row,int column){
+			return false;
+			}
+		};
+		
+		statsTable = new JTable(statsTableModel) {
+			public boolean isCellEditable(int row,int column){
+			return false;
+			}
+		};
+		statsTable.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				String value = statsTable.getValueAt(statsTable.getSelectedRow(), 0).toString();
+				for(Course c: courses) {
+					if(c.getcName().equals(value)) {
+						StatsFrame sFrame = new StatsFrame(value, c.getPassed(), c.getExamined());
+						sFrame.setSize(450, 250);
+						sFrame.setVisible(true);
+						break;
+					}
+				}
+				
+			}
+		});
+		
+		rsr = Connector.getRequests();
+		try {
+			while(rsr.next()) {
+				requestTableModel.addRow(new Object[] {rsr.getString("id"), rsr.getString("request1"), rsr.getString("request2")});
+			}
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		requestTable = new JTable(requestTableModel);
+		
+		JScrollPane scrollPane = new JScrollPane(courseTable);
+		scrollPane.setBounds(10, 11, 665, 478);
+		gradePanel.add(scrollPane);
 		
 		requestPanel.setBackground(Color.GRAY);
 		layeredPane.add(requestPanel, "name_38762156049700");
+		requestPanel.setLayout(null);
+		
+		JScrollPane scrollPane_2 = new JScrollPane(requestTable);
+		scrollPane_2.setBounds(10, 11, 665, 478);
+		requestPanel.add(scrollPane_2);
 		
 		formPanel.setBackground(Color.GRAY);
 		layeredPane.add(formPanel, "name_38765711160400");
-		formPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		formPanel.setLayout(null);
+		
+		JScrollPane scrollPane_3 = new JScrollPane(formTable);
+		scrollPane_3.setBounds(10, 11, 665, 478);
+		formPanel.add(scrollPane_3);
+		
+		statsPanel.setBackground(Color.GRAY);
+		layeredPane.add(statsPanel, "name_26293092121600");
+		statsPanel.setLayout(null);
+		
+		JScrollPane scrollPane_1 = new JScrollPane(statsTable);
+		scrollPane_1.setBounds(10, 11, 665, 478);
+		statsPanel.add(scrollPane_1);
 		
 		optionsPanel.setBackground(Color.DARK_GRAY);
 		optionsPanel.setBounds(850, 0, 165, 500);
 		getContentPane().add(optionsPanel);
 		optionsPanel.setLayout(null);
-		
-		Connector.GetInfo("sec");
 		
 		usernameLabel.setForeground(Color.WHITE);
 		usernameLabel.setFont(new Font("Tahoma", Font.PLAIN, 15));
@@ -153,6 +307,15 @@ public class MainSecretaryPage extends JFrame {
 		newsButton.setBounds(10, 250, 145, 23);
 		optionsPanel.add(newsButton);
 		
+	}
+	
+	public String getProfName(ArrayList <User> users, String id) {
+		for(User u: users) {
+			if(u.getId().equals(id)) {
+				return u.getLname();
+			}
+		}
+		return null;
 	}
 	
 	private void switchPanels(JPanel panel) {
