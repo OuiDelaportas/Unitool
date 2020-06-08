@@ -9,22 +9,35 @@ import javax.swing.table.DefaultTableModel;
 
 public class MainProfessorPage extends JFrame {
 	
-	JLayeredPane layeredPane = new JLayeredPane();
-	static JLabel usernameLabel = new JLabel();
-	static JLabel schoolLabel = new JLabel();
-	JPanel coursePanel = new JPanel();
-	JPanel newsPanel = new JPanel();
-	JPanel optionsPanel = new JPanel();
-	JPanel chatPanel = new JPanel();
-	JPanel plannerPanel = new JPanel();
-	JPanel statsPanel = new JPanel();
-	JTable courseTable = null;
-	JTable statsTable = null;
-	User newUser = null;
-	ResultSet rsr;
-	ArrayList <Course> courses = new ArrayList();
-	ArrayList <User> users = new ArrayList();
-	String check = null;
+	private JLayeredPane layeredPane = new JLayeredPane();
+	private static JLabel usernameLabel = new JLabel();
+	private static JLabel schoolLabel = new JLabel();
+	private JPanel coursePanel = new JPanel();
+	private JPanel infoPanel = new JPanel();
+	private JPanel mainpagePanel = new JPanel();
+	private JPanel newsPanel = new JPanel();
+	private JPanel optionsPanel = new JPanel();
+	private JPanel chatPanel = new JPanel();
+	private JPanel plannerPanel = new JPanel();
+	private JPanel statsPanel = new JPanel();
+	private JButton plannerButton = new JButton("Planner");
+	private JButton newsButton = new JButton("News");
+	private JButton chatButton = new JButton("Chat");
+	private JButton postButton = new JButton("Ανάρτηση");
+	private JButton logoutButton = new JButton("\u0391\u03C0\u03BF\u03C3\u03CD\u03BD\u03B4\u03B5\u03C3\u03B7");
+	private JButton statsButton = new JButton("\u03A3\u03C4\u03B1\u03C4\u03B9\u03C3\u03C4\u03B9\u03BA\u03AC");
+	private JButton courseButton = new JButton("\u03A4\u03B1 \u03BC\u03B1\u03B8\u03AE\u03BC\u03B1\u03C4\u03AC \u03BC\u03BF\u03C5");
+	private JScrollPane scrollPane;
+	private JScrollPane scrollPane_2;
+	private JScrollPane scrollPane_1;
+	private JTable courseTable = null;
+	private JTable statsTable = null;
+	private JTable newsTable = null;
+	private User newUser = null;
+	private ResultSet rsr;
+	private ArrayList <Course> courses = new ArrayList();
+	private ArrayList <User> users = new ArrayList();
+	private String check = null;
 	
 	/**
 	 * Create the frame.
@@ -36,29 +49,22 @@ public class MainProfessorPage extends JFrame {
 		getContentPane().setLayout(null);
 		
 		/*
-		 * Panels get filled
+		 * User List is filled
 		 */
-		rsr = Connector.getUsers();
-		try {
-			while(rsr.next()) {
-					newUser = new User(rsr.getString("usname"), rsr.getString("first_name"), rsr.getString("last_name"), rsr.getString("id"), 
-							rsr.getString("user_type"), rsr.getString("semester"), rsr.getString("school"), rsr.getString("dept"));
-					users.add(newUser);
-			}
-			rsr.close();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		users = Connector.getUsers(newUser, users);
 		
-		rsr = Connector.getCourses();
 		DefaultTableModel courseTableModel = new DefaultTableModel(new Object[] {"Όνομα Μαθήματος",  "Εξάμηνο"}, 0);
 		DefaultTableModel statsTableModel = new DefaultTableModel(new Object[] {"Όνομα Μαθήματος", "Εξάμηνο", "Διδάσκων"}, 0);
+		DefaultTableModel newsTableModel = new DefaultTableModel(new Object[] {"Όνομα Μαθήματος", "Τίτλος", "Διδάσκων", "Μήνυμα"}, 0);
+		/*
+		 * Course Table gets filled
+		 */
+		rsr = Connector.getCourses();
 		try {
 			while(rsr.next()) {
 				if(rsr.getString("school").equals(schoolLabel.getText())) {
 					Course newCourse = new Course(rsr.getString("course_name"), rsr.getString("id"), rsr.getString("prof_id"), rsr.getString("course_id"), 
-							Connector.getGrades(rsr.getString("course_id")), rsr.getString("semester"), rsr.getString("dept"), rsr.getFloat("passed"),
+							Connector.getGrades(rsr.getString("course_id"), rsr.getString("id")), rsr.getString("semester"), rsr.getString("dept"), rsr.getFloat("passed"),
 							rsr.getFloat("examined"), rsr.getString("school"));
 					courses .add(newCourse);
 					if(usernameLabel.getText().equals(newCourse.getcProfessor()) && !newCourse.getcName().equals(check)) {
@@ -72,18 +78,22 @@ public class MainProfessorPage extends JFrame {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		courseTable = new JTable(courseTableModel) {
-			public boolean isCellEditable(int row,int column){
-			return false;
-			}
-		};
-		
+		/*
+		 * Statistics table gets filled
+		 */
 		for(Course c: courses) {
 			if(schoolLabel.getText().equals(c.getSchool())) {
 				statsTableModel.addRow(new Object[] {c.getcName(), c.getSemester(), getProfName(users, c.getcProfessor())});
 			}
 		}
-		
+		/*
+		 * Tables initialized and made non-editable
+		 */
+		courseTable = new JTable(courseTableModel) {
+			public boolean isCellEditable(int row,int column){
+			return false;
+			}
+		};
 		statsTable = new JTable(statsTableModel) {
 			public boolean isCellEditable(int row,int column){
 			return false;
@@ -105,15 +115,31 @@ public class MainProfessorPage extends JFrame {
 			}
 		});
 		/*
-		 * Buttons and panels are created
+		 * newsTable Initialization
+		 * 
 		 */
-		JPanel infoPanel = new JPanel();
+		newsTable = new JTable(Connector.getNews(schoolLabel.getText(), schoolLabel, usernameLabel, courses, users, newsTableModel)) {
+			public String getToolTipText(MouseEvent e) {
+		        String tip = null;
+		        java.awt.Point p = e.getPoint();
+		        int rowIndex = rowAtPoint(p);
+		        int colIndex = columnAtPoint(p);
+		        int realColumnIndex = convertColumnIndexToModel(colIndex);
+		        tip = (String) newsTableModel.getValueAt(rowIndex, colIndex);
+		        		
+		        return tip;
+			}
+			
+		};
+		/*
+		 * Panels and buttons are filled
+		 */
+
 		infoPanel.setBackground(Color.DARK_GRAY);
 		infoPanel.setBounds(0, 0, 165, 500);
 		getContentPane().add(infoPanel);
 		infoPanel.setLayout(null);
 		
-		JButton courseButton = new JButton("\u03A4\u03B1 \u03BC\u03B1\u03B8\u03AE\u03BC\u03B1\u03C4\u03AC \u03BC\u03BF\u03C5");
 		courseButton.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		courseButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -123,7 +149,6 @@ public class MainProfessorPage extends JFrame {
 		courseButton.setBounds(10, 150, 145, 23);
 		infoPanel.add(courseButton);
 		
-		JButton statsButton = new JButton("\u03A3\u03C4\u03B1\u03C4\u03B9\u03C3\u03C4\u03B9\u03BA\u03AC");
 		statsButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				switchPanels(statsPanel);
@@ -133,7 +158,6 @@ public class MainProfessorPage extends JFrame {
 		statsButton.setBounds(10, 200, 145, 23);
 		infoPanel.add(statsButton);
 		
-		JButton logoutButton = new JButton("\u0391\u03C0\u03BF\u03C3\u03CD\u03BD\u03B4\u03B5\u03C3\u03B7");
 		logoutButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				dispose();
@@ -145,6 +169,9 @@ public class MainProfessorPage extends JFrame {
 		logoutButton.setBounds(10, 466, 145, 23);
 		infoPanel.add(logoutButton);
 		
+		/*
+		 * user info filled
+		 */
 		usernameLabel.setForeground(Color.WHITE);
 		usernameLabel.setFont(new Font("Tahoma", Font.PLAIN, 15));
 		usernameLabel.setBounds(10, 10, 110, 14);
@@ -155,7 +182,6 @@ public class MainProfessorPage extends JFrame {
 		schoolLabel.setBounds(10, 30, 110, 14);
 		infoPanel.add(schoolLabel);
 		
-		JPanel mainpagePanel = new JPanel();
 		mainpagePanel.setBounds(165, 0, 685, 500);
 		getContentPane().add(mainpagePanel);
 		mainpagePanel.setLayout(new CardLayout(0, 0));
@@ -165,6 +191,24 @@ public class MainProfessorPage extends JFrame {
 		
 		newsPanel.setBackground(Color.GRAY);
 		layeredPane.add(newsPanel, "name_23978823487000");
+		newsPanel.setLayout(null);
+		
+		scrollPane_2 = new JScrollPane(newsTable);
+		scrollPane_2.setBounds(10, 11, 665, 440);
+		newsPanel.add(scrollPane_2);
+		
+		postButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String cID = newsTable.getValueAt(newsTable.getSelectedRow(), 0).toString();
+				String title = newsTable.getValueAt(newsTable.getSelectedRow(), 1).toString();
+				String text = newsTable.getValueAt(newsTable.getSelectedRow(), 3).toString();
+				String school = schoolLabel.getText();
+				String id = usernameLabel.getText();
+				Connector.updateNews(cID, school, text, title, id);
+			}
+		});
+		postButton.setBounds(222, 462, 232, 27);
+		newsPanel.add(postButton);
 		
 		chatPanel.setBackground(Color.GRAY);
 		layeredPane.add(chatPanel, "name_24018466741200");
@@ -176,7 +220,7 @@ public class MainProfessorPage extends JFrame {
 		layeredPane.add(coursePanel, "name_39667471417200");
 		coursePanel.setLayout(null);
 		
-		JScrollPane scrollPane = new JScrollPane(courseTable);
+		scrollPane = new JScrollPane(courseTable);
 		scrollPane.setBounds(10, 11, 665, 478);
 		coursePanel.add(scrollPane);
 		
@@ -184,7 +228,7 @@ public class MainProfessorPage extends JFrame {
 		layeredPane.add(statsPanel, "name_27716693154100");
 		statsPanel.setLayout(null);
 		
-		JScrollPane scrollPane_1 = new JScrollPane(statsTable);
+		scrollPane_1 = new JScrollPane(statsTable);
 		scrollPane_1.setBounds(10, 11, 665, 478);
 		statsPanel.add(scrollPane_1);
 		
@@ -193,7 +237,6 @@ public class MainProfessorPage extends JFrame {
 		getContentPane().add(optionsPanel);
 		optionsPanel.setLayout(null);
 		
-		JButton chatButton = new JButton("Chat");
 		chatButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				switchPanels(chatPanel);
@@ -203,7 +246,6 @@ public class MainProfessorPage extends JFrame {
 		chatButton.setBounds(10, 150, 145, 23);
 		optionsPanel.add(chatButton);
 		
-		JButton plannerButton = new JButton("Planner");
 		plannerButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				switchPanels(plannerPanel);
@@ -213,7 +255,6 @@ public class MainProfessorPage extends JFrame {
 		plannerButton.setBounds(10, 200, 145, 23);
 		optionsPanel.add(plannerButton);
 		
-		JButton newsButton = new JButton("News");
 		newsButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				switchPanels(newsPanel);

@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 
 public class Course {
 
@@ -99,6 +100,20 @@ public class Course {
 	public void setcProfessor(String professor) {
 		this.professorID = professor;
 	}
-	
-	
+	public static String getCourseID(ArrayList <Course> courses, String name) {
+		for(Course c: courses) {
+			if(c.getcName().equals(name)) {
+				return c.getCid();
+			}
+		}
+		return null;
+	}
+	public static String getCourseName(ArrayList <Course> courses, String id) {
+		for(Course c: courses) {
+			if(c.getCid().equals(id)) {
+				return c.getcName();
+			}
+		}
+		return null;
+	}
 }

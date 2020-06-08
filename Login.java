@@ -112,6 +112,7 @@ public class Login extends JFrame{
 					 */
 					frame.setVisible(false);
 					MainStudentPage studPage = new MainStudentPage();
+					studPage.setTitle("Unitool");
 					studPage.setVisible(true);
 					studPage.addWindowListener(new WindowAdapter()
 					{
@@ -128,6 +129,7 @@ public class Login extends JFrame{
 					 */
 					frame.setVisible(false);
 					MainProfessorPage profPage = new MainProfessorPage();
+					profPage.setTitle("Unitool");
 					profPage.setVisible(true);
 					profPage.addWindowListener(new WindowAdapter()
 					{
@@ -144,6 +146,7 @@ public class Login extends JFrame{
 					 */
 					frame.setVisible(false);
 					MainSecretaryPage secPage = new MainSecretaryPage();
+					secPage.setTitle("Unitool");
 					secPage.setVisible(true);
 					secPage.addWindowListener(new WindowAdapter()
 					{

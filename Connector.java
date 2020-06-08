@@ -1,8 +1,18 @@
+import java.io.*;
+import java.net.URL;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Date;
+
+import javax.swing.JLabel;
+import javax.swing.table.DefaultTableModel;
+
+import com.mindfusion.common.DateTime;
+import com.mindfusion.scheduling.awt.AwtCalendar;
+import com.mindfusion.scheduling.model.Appointment;
 
 public class Connector {
-	private static Connection connection = null;                                             // The database connection object.
+	private static Connection connection = null;
     private static Statement statement; 	
     private PreparedStatement PrepStmt;  
     private static ResultSet rsr;                                                    
@@ -96,7 +106,7 @@ public class Connector {
     /*
      * Fetches data about users
      */
-    public static ResultSet getUsers() {
+    public static ArrayList<User> getUsers(User newUser, ArrayList <User> users) {
     	try {
 			Statement stmt = connection.createStatement();
 			rsr = stmt.executeQuery("SELECT * FROM user");
@@ -104,7 +114,18 @@ public class Connector {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return rsr;
+    	try {
+			while(rsr.next()) {
+					newUser = new User(rsr.getString("usname"), rsr.getString("first_name"), rsr.getString("last_name"), rsr.getString("id"), 
+							rsr.getString("user_type"), rsr.getString("semester"), rsr.getString("school"), rsr.getString("dept"));
+					users.add(newUser);
+			}
+			rsr.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return users;
 	}
     /*
      * Fetches course names to show
@@ -122,11 +143,11 @@ public class Connector {
     /*
      * Gets grades depending on user id and course id
      */
-    public static String getGrades(String courseID) {
+    public static String getGrades(String courseID, String id) {
     	String gr = null ;
     	try {
 			PreparedStatement stmt = connection.prepareStatement("SELECT * FROM grades WHERE id = ? AND course_id = ?");
-			stmt.setString(1, ID);
+			stmt.setString(1, id);
 			stmt.setString(2,  courseID);
 			rsr = stmt.executeQuery();
 			while(rsr.next()) {
@@ -185,7 +206,9 @@ public class Connector {
 		}
     	return rsr;
     }
-    
+    /*
+     * Fetches request table data
+     */
     public static ResultSet getRequests() {
     	try {
 			Statement stmt = connection.createStatement();
@@ -196,9 +219,94 @@ public class Connector {
 		}
     	return rsr;
     }
+    /*
+     * Updates db based on grades in jtable gradeTable
+     */
+    public static void updateGrade(ArrayList<Course> courses, String grade, String id, String cName) {
+    	PreparedStatement stmt;
+		try {
+			stmt = connection.prepareStatement("UPDATE grades SET grade=? WHERE id=? AND course_id=?");
+			stmt.setString(1, grade);
+			stmt.setString(2, id);
+			stmt.setString(3, Course.getCourseID(courses, cName));
+			stmt.executeUpdate();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+    
+    public static DefaultTableModel getNews(String school, JLabel schoolLabel, JLabel usernameLabel, ArrayList <Course> courses, ArrayList <User> users, DefaultTableModel newsTableModel) {
+    	try {
+			PreparedStatement stmt = connection.prepareStatement("SELECT * FROM news WHERE school=?");
+			stmt.setString(1, school);
+			rsr = stmt.executeQuery();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	try {
+			while(rsr.next()) {
+				if(schoolLabel.getText().equals(rsr.getString("school"))) {
+					newsTableModel.addRow(new Object[] {Course.getCourseName(courses, rsr.getString("course_id")), rsr.getString("title"), 
+							User.getUserName(users, rsr.getString("user_id")), rsr.getString("text")});
+				}
+			}
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		newsTableModel.addRow(new Object[] {"Νέα Προσθήκη", "Νέα Προσθήκη", User.getUserName(users, usernameLabel.getText()), "Νέα Προσθήκη"});
+    	return newsTableModel;
+    }
+    public static void updateNews(String cID, String school, String text, String title, String id) {
+    	try {
+			PreparedStatement stmt = connection.prepareStatement("UPDATE news SET course_id=?, school=?, text=?, title=? WHERE user_id=?");
+			stmt.setString(1, cID);
+			stmt.setString(2, school);
+			stmt.setString(3, text);
+			stmt.setString(4, title);
+			stmt.setString(5, id);
+			stmt.executeUpdate();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+    
+    /*
+     * Uploads File to database. Might not be included.
+     * 
+     * 
+    public void uploadFile(String fName) {
+    	URL url = getClass().getResource(fName);
+    	File file = new File(url.getPath());
+        byte[] fData = new byte[(int) file.length()];
+        DataInputStream dis;
+		try {
+			dis = new DataInputStream(new FileInputStream(file));
+			dis.readFully(fData);
+			dis.close();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+       	try {
+    		PreparedStatement ps = connection.prepareStatement(
+		            "UPDATE presentations SET file_name=?, file=? WHERE id=?");
+		 	ps.setString(1, fName);
+	        ps.setBytes(2, fData);
+	        ps.setString(3, ID);
+	        ps.executeUpdate();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+    */
     
     /**
-     * Closes the statement so that it can execute a different query.
+     * Closes the statement
      */
     
     public static void close(Statement st)
@@ -217,7 +325,7 @@ public class Connector {
     }
 
     /**
-     * Closes the result set so that it can parse different data.
+     * Closes the result set
      */
     
     public static void close(ResultSet rs)
@@ -236,7 +344,7 @@ public class Connector {
     }
 
     /**
-     * Close the connection to the DB
+     * Closes the connection to the DB
      */
     
     public static void close()

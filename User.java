@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 
 public class User {
 
@@ -83,5 +84,14 @@ public class User {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+	
+	public static String getUserName(ArrayList <User> users, String id) {
+		for(User u: users) {
+			if(u.getId().equals(id)) {
+				return u.getLname();
+			}
+		}
+		return null;
 	}
 }
