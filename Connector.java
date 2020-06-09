@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 import com.mindfusion.common.DateTime;
@@ -16,11 +17,9 @@ public class Connector {
     private static Statement statement; 	
     private PreparedStatement PrepStmt;  
     private static ResultSet rsr;                                                    
-	
     private String uName;
     private String Pass;
     private String URL;
-    //private String host = "localhost";
     private String database;
     private static String ID;
     
@@ -71,7 +70,9 @@ public class Connector {
 		}
     	return userType;
     }
-    
+    /*
+     * Fetches the user information(Username, School, semester)
+     */
     public static void GetInfo(String userType) {
     	try {
 			statement = connection.createStatement();
@@ -195,7 +196,9 @@ public class Connector {
 			e.printStackTrace();
 		}
 	}
-    
+    /*
+     * Fetches form table data
+     */
     public static ResultSet getForms() {
     	try {
 			Statement stmt = connection.createStatement();
@@ -235,7 +238,9 @@ public class Connector {
 			e.printStackTrace();
 		}
     }
-    
+    /*
+     * Fetches the news table data
+     */
     public static DefaultTableModel getNews(String school, JLabel schoolLabel, JLabel usernameLabel, ArrayList <Course> courses, ArrayList <User> users, DefaultTableModel newsTableModel) {
     	try {
 			PreparedStatement stmt = connection.prepareStatement("SELECT * FROM news WHERE school=?");
@@ -248,18 +253,25 @@ public class Connector {
     	try {
 			while(rsr.next()) {
 				if(schoolLabel.getText().equals(rsr.getString("school"))) {
-					newsTableModel.addRow(new Object[] {Course.getCourseName(courses, rsr.getString("course_id")), rsr.getString("title"), 
+					if(!((rsr.getString("course_id").equals(null) || rsr.getString("course_id").equals("")) && (rsr.getString("school").equals(null) || 
+							rsr.getString("school").equals("")) && (rsr.getString("text").equals(null) || rsr.getString("text").equals("")) && 
+							(rsr.getString("title").equals(null) || rsr.getString("title").equals("")))) {
+						newsTableModel.addRow(new Object[] {Course.getCourseName(courses, rsr.getString("course_id")), rsr.getString("title"), 
 							User.getUserName(users, rsr.getString("user_id")), rsr.getString("text")});
+					}
 				}
 			}
 		} catch (SQLException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		newsTableModel.addRow(new Object[] {"Νέα Προσθήκη", "Νέα Προσθήκη", User.getUserName(users, usernameLabel.getText()), "Νέα Προσθήκη"});
     	return newsTableModel;
     }
-    public static void updateNews(String cID, String school, String text, String title, String id) {
+    /*
+     * updates the data in the news table. Available to secretaries and professors only
+     */
+    public static DefaultTableModel updateNews(String cID, String school, String text, String title, String id, 
+    		DefaultTableModel newsTableModel, ArrayList <User> users, JLabel usernameLabel) {
     	try {
 			PreparedStatement stmt = connection.prepareStatement("UPDATE news SET course_id=?, school=?, text=?, title=? WHERE user_id=?");
 			stmt.setString(1, cID);
@@ -272,39 +284,96 @@ public class Connector {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+    	newsTableModel.addRow(new Object[] {"Νέα Προσθήκη", "Νέα Προσθήκη", User.getUserName(users, usernameLabel.getText()), "Νέα Προσθήκη"});
+    	return newsTableModel;
     }
-    
     /*
-     * Uploads File to database. Might not be included.
-     * 
-     * 
-    public void uploadFile(String fName) {
-    	URL url = getClass().getResource(fName);
-    	File file = new File(url.getPath());
-        byte[] fData = new byte[(int) file.length()];
-        DataInputStream dis;
-		try {
-			dis = new DataInputStream(new FileInputStream(file));
-			dis.readFully(fData);
-			dis.close();
-		} catch (IOException e1) {
+     * Fetches data from planner table
+     */
+    public static DefaultTableModel getPlans(String id, DefaultTableModel plannerTableModel) {
+    	try {
+    		PreparedStatement stmt = connection.prepareStatement("SELECT * FROM planner WHERE id=?");
+			stmt.setString(1, id);
+			rsr = stmt.executeQuery();
+			
+			while(rsr.next()) {
+					plannerTableModel.addRow(new Object[] {rsr.getString("event_name"), rsr.getString("date"), rsr.getString("hour"), rsr.getString("description")});
+			}
+		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			e.printStackTrace();
 		}
-       	try {
-    		PreparedStatement ps = connection.prepareStatement(
-		            "UPDATE presentations SET file_name=?, file=? WHERE id=?");
-		 	ps.setString(1, fName);
-	        ps.setBytes(2, fData);
-	        ps.setString(3, ID);
-	        ps.executeUpdate();
+		return plannerTableModel;
+    }
+    /*
+     * Updates the planner table
+     */
+    public static DefaultTableModel setPlans(String name, String date, String hour, String desc, String counter, DefaultTableModel plannerTableModel) {
+    	PreparedStatement stmt;
+		try {
+			stmt = connection.prepareStatement("UPDATE planner SET event_name=?, date=?, hour=?, description=? WHERE event_id=?");
+			stmt.setString(1, name);
+	    	stmt.setString(2, date);
+	    	stmt.setString(3, hour);
+	    	stmt.setString(4, desc);
+	    	stmt.setString(5, counter);
+	    	stmt.executeUpdate();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return plannerTableModel;
+    }
+    /*
+     * Deletes a plan
+     */
+    public static void deletePlan(String name, String date, String hour, String description) {
+    	PreparedStatement stmt;
+		try {
+			stmt = connection.prepareStatement("UPDATE planner SET event_name=?, date=?, hour=?, description=? WHERE event_name=? AND date=? AND hour=? AND description=?");
+			stmt.setString(1, null);
+	    	stmt.setString(2, null);
+	    	stmt.setString(3, null);
+	    	stmt.setString(4, null);
+	    	stmt.setString(5, name);
+	    	stmt.setString(6, date);
+	    	stmt.setString(7, hour);
+	    	stmt.setString(8, description);
+	    	stmt.executeUpdate();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     }
-    */
-    
+    /*
+     * gets free space to put a new planS
+     */
+    public static String getPlanFree() {
+    	Statement stmt;
+		try {
+			stmt = connection.createStatement();
+			rsr = stmt.executeQuery("SELECT * FROM planner");
+			String name;
+			String date;
+			String hour;
+			String desc;
+			while(rsr.next()) {
+				name = rsr.getString("event_name");
+				date = rsr.getString("date");
+				hour = rsr.getString("hour");
+				desc = rsr.getString("description");
+				if(rsr.wasNull()) {
+					return rsr.getString("event_id");
+				}else {
+					JOptionPane.showMessageDialog(null, "Διάγραψε ένα γεγονός");
+				}
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return ID;
+    }
     /**
      * Closes the statement
      */

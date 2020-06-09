@@ -5,10 +5,12 @@ import java.awt.event.*;
 public class Login extends JFrame{
 
 	private JFrame frame;
+	private JPanel panel = new JPanel();
 	private JTextField userField;
 	private JPasswordField passField;
 	private JLabel userLabel;
 	private JLabel lblNewLabel;
+	private JButton loginButton = new JButton("Login");
 
 	/**
 	 * Launch the application.
@@ -36,12 +38,9 @@ public class Login extends JFrame{
 		frame.setVisible(true);
 		Point center = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint();
 	    int windowWidth = 400;
-	    // set position and size
 	    frame.setBounds(center.x - windowWidth / 2, center.y / 2, 430, 361);
 	    
 	    
-	    
-		JPanel panel = new JPanel();
 		panel.setBackground(Color.DARK_GRAY);
 		frame.setContentPane(panel);
 		
@@ -63,7 +62,6 @@ public class Login extends JFrame{
 		passField.setForeground(Color.WHITE);
 		panel.add(passField);
 		
-		JButton loginButton = new JButton("Login");
 		loginButton.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		loginButton.setBounds(162, 193, 89, 23);
 		loginButton.addActionListener(action);
@@ -97,8 +95,6 @@ public class Login extends JFrame{
 			 */	
 			String uname = userField.getText();
 			String pass = new String (passField.getPassword());
-			//System.out.println(uname);
-			//System.out.println(pass);
 			Connector CM = new Connector("root", "Vrady0ma0", "jdbc:mysql://localhost:3306/", "uni_db");
 			try {
 				if(!CM.connectToDB()) {

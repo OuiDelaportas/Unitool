@@ -9,17 +9,6 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
-import com.mindfusion.common.DateTime;
-import com.mindfusion.common.Duration;
-import com.mindfusion.scheduling.CalendarAdapter;
-import com.mindfusion.scheduling.CalendarView;
-import com.mindfusion.scheduling.CustomDrawElements;
-import com.mindfusion.scheduling.DrawEvent;
-import com.mindfusion.scheduling.GroupType;
-import com.mindfusion.scheduling.ItemConfirmEvent;
-import com.mindfusion.scheduling.ThemeType;
-import com.mindfusion.scheduling.awt.AwtCalendar;
-
 public class MainStudentPage extends JFrame {
 	
 	
@@ -34,6 +23,7 @@ public class MainStudentPage extends JFrame {
 	private JScrollPane scrollPane_2;
 	private JScrollPane scrollPane_3;
 	private JScrollPane scrollPane_4;
+	private JScrollPane scrollPane_5;
 	private JButton courseButton = new JButton("Τα μαθήματα μου");
 	private JButton statsButton = new JButton("Στατιστικά");
 	private JButton gradeButton = new JButton("Βαθμολογίες");
@@ -41,6 +31,7 @@ public class MainStudentPage extends JFrame {
 	private JButton requestButton = new JButton("\u0391\u03B9\u03C4\u03AE\u03C3\u03B5\u03B9\u03C2");
 	private JButton logoutButton = new JButton("\u0391\u03C0\u03BF\u03C3\u03CD\u03BD\u03B4\u03B5\u03C3\u03B7");
 	private JPanel mainpagePanel = new JPanel();
+	private JButton saveButton = new JButton("Αποθήκευση Γεγονότος");
 	private JButton cButton = new JButton("Πιστοποιητικό Αναλυτικής Βαθμολογίας");
 	private JButton gButton = new JButton("Πιστοποιητικό Σπουδών");
 	private JLabel lblNewLabel = new JLabel("Λεπτομέρειες - Σχόλια");
@@ -57,18 +48,20 @@ public class MainStudentPage extends JFrame {
 	private JPanel newsPanel = new JPanel();
 	private JPanel statsPanel = new JPanel();
 	private JTextArea textArea = new JTextArea();
-	private Course newCourse = null;
+	private Course newCourse;
 	private ArrayList <Course> courses = new ArrayList();
-	private JTable gradeTable = null;
-	private JTable courseTable = null;
-	private JTable formTable = null;
-	private JTable statsTable = null;
-	private JTable newsTable = null;
+	private JTable gradeTable;
+	private JTable plannerTable;
+	private JTable courseTable;
+	private JTable formTable;
+	private JTable statsTable;
+	private JTable newsTable;
 	private ResultSet rsr;
-	private User newUser = null;
+	private User newUser;
 	private ArrayList <User> users = new ArrayList();
 	private ArrayList <String> courseSelected = new ArrayList();
 	private ArrayList <String> text = new ArrayList();
+	private String counter;
 	
 	/**
 	 * Create the frame.
@@ -171,9 +164,6 @@ public class MainStudentPage extends JFrame {
 				}
 			}
 		});
-		
-		
-		
 		/*
 		 * Stats Table filled and made non-editable
 		 */
@@ -216,8 +206,31 @@ public class MainStudentPage extends JFrame {
 		        return tip;
 			}
 		};
-		
-		
+		/*
+		 * Planner Table Model gets created and planner table gets filled
+		 */
+		DefaultTableModel plannerTableModel = new DefaultTableModel(new Object[] {"Όνομα Γεγονότος", "Ημερομηνία", "Ώρα", "Περιγραφή"}, 0);
+		plannerTable = new JTable(Connector.getPlans(usernameLabel.getText(), plannerTableModel)) {
+			public String getToolTipText(MouseEvent e) {
+		        String tip = null;
+		        java.awt.Point p = e.getPoint();
+		        int rowIndex = rowAtPoint(p);
+		        int colIndex = columnAtPoint(p);
+		        int realColumnIndex = convertColumnIndexToModel(colIndex);
+		        tip = (String) newsTableModel.getValueAt(rowIndex, colIndex);
+		        		
+		        return tip;
+			}
+			
+		};
+		saveButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Connector.setPlans(plannerTable.getValueAt(plannerTable.getSelectedRow(), 0).toString(), plannerTable.getValueAt(plannerTable.getSelectedRow(), 1).toString(), 
+						plannerTable.getValueAt(plannerTable.getSelectedRow(), 2).toString(), 
+						plannerTable.getValueAt(plannerTable.getSelectedRow(), 3).toString(),
+						Connector.getPlanFree(), plannerTableModel);
+			}
+		});
 		/*
 		 * Buttons, panels and labels customized
 		 */
@@ -295,6 +308,30 @@ public class MainStudentPage extends JFrame {
 		plannerPanel.setBackground(Color.GRAY);
 		layeredPane.add(plannerPanel, "name_24020787422800");
 		plannerPanel.setLayout(null);
+		
+		scrollPane_5 = new JScrollPane(plannerTable);
+		scrollPane_5.setBounds(10, 11, 665, 440);
+		plannerPanel.add(scrollPane_5);
+		
+		saveButton.setBounds(410, 462, 232, 27);
+		plannerPanel.add(saveButton);
+		
+		JButton deleteButton = new JButton("Διαγραφή Γεγονότος");
+		deleteButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(plannerTable.getSelectedRow() != -1) {
+		               String name = plannerTable.getValueAt(plannerTable.getSelectedRow(), 0).toString();
+		               String date = plannerTable.getValueAt(plannerTable.getSelectedRow(), 1).toString();
+		               String hour = plannerTable.getValueAt(plannerTable.getSelectedRow(), 2).toString();
+		               String description = plannerTable.getValueAt(plannerTable.getSelectedRow(), 3).toString();
+		               plannerTableModel.removeRow(plannerTable.getSelectedRow());
+		               plannerTableModel.addRow(new Object[] {});
+		               Connector.deletePlan(name, date, hour, description);
+		            }
+			}
+		});
+		deleteButton.setBounds(43, 462, 232, 27);
+		plannerPanel.add(deleteButton);
 		
 		coursePanel.setBackground(Color.GRAY);
 		layeredPane.add(coursePanel, "name_39396003979000");
@@ -409,34 +446,6 @@ public class MainStudentPage extends JFrame {
 		newsButton.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		newsButton.setBounds(10, 250, 145, 23);
 		optionsPanel.add(newsButton);
-		
-		
-		//Calendar gets Created
-		 
-		AwtCalendar calendar = new AwtCalendar();
-		calendar.setBounds(0, 0, 685, 500);
-        calendar.beginInit();
-        calendar.setCurrentView(CalendarView.Timetable);
-        calendar.setTheme(ThemeType.Light);
-        calendar.setCustomDraw(CustomDrawElements.TimetableItem);
-        
-        calendar.addCalendarListener(new CalendarAdapter() {
-             public void itemCreating(ItemConfirmEvent e) {
-                 onCalendarItemCreating(e);
-             }
-
-         });
-        //Connector.getPlanner(calendar);
-
-        for (int i = 1; i < 7; i++)
-        	calendar.getTimetableSettings().getDates().add(DateTime.today().addDays(i));
-
-        calendar.getTimetableSettings().setItemOffset(30);
-        calendar.getTimetableSettings().setShowItemSpans(false);
-        calendar.getTimetableSettings().setSnapInterval(Duration.fromMinutes(1));
-        calendar.getTimetableSettings().setVisibleColumns(7);
-        calendar.endInit();
-        plannerPanel.add(calendar);
 	}
 	
 	private void switchPanels(JPanel panel) {
@@ -456,13 +465,5 @@ public class MainStudentPage extends JFrame {
 	
 	public static void setSchoolLabelText(String text) {
 		schoolLabel.setText(text);
-    }
-	
-	public boolean isCellEditable(int row, int column) {
-	       return false;
-	}
-	protected void onCalendarItemCreating(ItemConfirmEvent e) {
-	       DateTime start = e.getItem().getStartTime();
-	       DateTime end = e.getItem().getEndTime();
-	}   
+    }  
 }

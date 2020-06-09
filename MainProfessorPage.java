@@ -27,17 +27,21 @@ public class MainProfessorPage extends JFrame {
 	private JButton logoutButton = new JButton("\u0391\u03C0\u03BF\u03C3\u03CD\u03BD\u03B4\u03B5\u03C3\u03B7");
 	private JButton statsButton = new JButton("\u03A3\u03C4\u03B1\u03C4\u03B9\u03C3\u03C4\u03B9\u03BA\u03AC");
 	private JButton courseButton = new JButton("\u03A4\u03B1 \u03BC\u03B1\u03B8\u03AE\u03BC\u03B1\u03C4\u03AC \u03BC\u03BF\u03C5");
+	private JButton deleteButton = new JButton("Διαγραφή Γεγονότος");
+	private JButton saveButton = new JButton("Αποθήκευση Γεγονότος");
 	private JScrollPane scrollPane;
 	private JScrollPane scrollPane_2;
 	private JScrollPane scrollPane_1;
-	private JTable courseTable = null;
-	private JTable statsTable = null;
-	private JTable newsTable = null;
-	private User newUser = null;
+	private JScrollPane scrollPane_3;
+	private JTable courseTable;
+	private JTable statsTable;
+	private JTable newsTable;
+	private JTable plannerTable;
+	private User newUser;
 	private ResultSet rsr;
 	private ArrayList <Course> courses = new ArrayList();
 	private ArrayList <User> users = new ArrayList();
-	private String check = null;
+	private String check;
 	
 	/**
 	 * Create the frame.
@@ -111,12 +115,10 @@ public class MainProfessorPage extends JFrame {
 						break;
 					}
 				}
-				
 			}
 		});
 		/*
 		 * newsTable Initialization
-		 * 
 		 */
 		newsTable = new JTable(Connector.getNews(schoolLabel.getText(), schoolLabel, usernameLabel, courses, users, newsTableModel)) {
 			public String getToolTipText(MouseEvent e) {
@@ -131,6 +133,32 @@ public class MainProfessorPage extends JFrame {
 			}
 			
 		};
+		newsTableModel.addRow(new Object[] {"Νέα Προσθήκη", "Νέα Προσθήκη", User.getUserName(users, usernameLabel.getText()), "Νέα Προσθήκη"});
+		/*
+		 * Planner table gets created
+		 */
+		DefaultTableModel plannerTableModel = new DefaultTableModel(new Object[] {"Όνομα Γεγονότος", "Ημερομηνία", "Ώρα", "Περιγραφή"}, 0);
+		plannerTable = new JTable(Connector.getPlans(usernameLabel.getText(), plannerTableModel)) {
+			public String getToolTipText(MouseEvent e) {
+		        String tip = null;
+		        java.awt.Point p = e.getPoint();
+		        int rowIndex = rowAtPoint(p);
+		        int colIndex = columnAtPoint(p);
+		        int realColumnIndex = convertColumnIndexToModel(colIndex);
+		        tip = (String) newsTableModel.getValueAt(rowIndex, colIndex);
+		        		
+		        return tip;
+			}
+			
+		};
+		plannerTableModel.addRow(new Object[] {"Νέο Γεγονός", "Νέο Γεγονός", "Νέο Γεγονός", "Νέο Γεγονός"});
+		saveButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Connector.setPlans(plannerTable.getValueAt(plannerTable.getSelectedRow(), 0).toString(), plannerTable.getValueAt(plannerTable.getSelectedRow(), 1).toString(), 
+						plannerTable.getValueAt(plannerTable.getSelectedRow(), 2).toString(), plannerTable.getValueAt(plannerTable.getSelectedRow(), 3).toString(),
+						Connector.getPlanFree(), plannerTableModel);
+			}
+		});
 		/*
 		 * Panels and buttons are filled
 		 */
@@ -204,7 +232,7 @@ public class MainProfessorPage extends JFrame {
 				String text = newsTable.getValueAt(newsTable.getSelectedRow(), 3).toString();
 				String school = schoolLabel.getText();
 				String id = usernameLabel.getText();
-				Connector.updateNews(cID, school, text, title, id);
+				Connector.updateNews(cID, school, text, title, id, newsTableModel, users, usernameLabel);
 			}
 		});
 		postButton.setBounds(222, 462, 232, 27);
@@ -215,6 +243,17 @@ public class MainProfessorPage extends JFrame {
 		
 		plannerPanel.setBackground(Color.GRAY);
 		layeredPane.add(plannerPanel, "name_24020787422800");
+		plannerPanel.setLayout(null);
+		
+		scrollPane_3 = new JScrollPane(plannerTable);
+		scrollPane_3.setBounds(10, 11, 665, 440);
+		plannerPanel.add(scrollPane_3);
+		
+		deleteButton.setBounds(43, 462, 232, 27);
+		plannerPanel.add(deleteButton);
+		
+		saveButton.setBounds(410, 462, 232, 27);
+		plannerPanel.add(saveButton);
 		
 		coursePanel.setBackground(Color.GRAY);
 		layeredPane.add(coursePanel, "name_39667471417200");

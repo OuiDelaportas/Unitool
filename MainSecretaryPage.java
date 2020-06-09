@@ -40,16 +40,20 @@ public class MainSecretaryPage extends JFrame {
 	private JScrollPane scrollPane_3;
 	private JScrollPane scrollPane_4;
 	private ArrayList <Course> courses = new ArrayList();
-	private JTable gradeTable = null;
-	private JTable statsTable = null;
-	private JTable requestTable = null;
-	private JTable formTable = null;
-	private JTable newsTable = null;
-	private ResultSet rsr = null;
-	private Course newCourse = null;
-	private User newUser = null;
+	private JTable gradeTable;
+	private JTable statsTable;
+	private JTable requestTable;
+	private JTable formTable;
+	private JTable newsTable;
+	private JTable plannerTable;
+	private ResultSet rsr;
+	private Course newCourse;
+	private User newUser;
 	private ArrayList <User> users = new ArrayList();
 	private JTextField textField;
+	private final JScrollPane scrollPane_5;
+	private final JButton deleteButton = new JButton("Διαγραφή Γεγονότος");
+	private final JButton saveButton = new JButton("Προσθήκη Γεγονότος");
 	
 	/**
 	 * Create the frame.
@@ -133,6 +137,13 @@ public class MainSecretaryPage extends JFrame {
 		
 		plannerPanel.setBackground(Color.GRAY);
 		layeredPane.add(plannerPanel, "name_24020787422800");
+		plannerPanel.setLayout(null);
+		deleteButton.setBounds(43, 462, 232, 27);
+		
+		plannerPanel.add(deleteButton);
+		saveButton.setBounds(410, 462, 232, 27);
+		
+		plannerPanel.add(saveButton);
 		
 		gradePanel.setBackground(Color.GRAY);
 		layeredPane.add(gradePanel, "name_38718138169000");
@@ -149,7 +160,6 @@ public class MainSecretaryPage extends JFrame {
 		DefaultTableModel newsTableModel = new DefaultTableModel(new Object[] {"Όνομα Μαθήματος", "Τίτλος", "Διδάσκων", "Μήνυμα"}, 0);
 		/*
 		 * Courses list gets filled along with table models
-		 * 
 		 */
 		rsr = Connector.getCourses();
 		try {
@@ -188,8 +198,7 @@ public class MainSecretaryPage extends JFrame {
 			e1.printStackTrace();
 		}
 		/*
-		 * form table created and filled
-		 * 
+		 * form table created and filled 
 		 */
 		formTable = new JTable(formTableModel) {
 			public boolean isCellEditable(int row,int column){
@@ -296,11 +305,50 @@ public class MainSecretaryPage extends JFrame {
 			}
 			
 		};
+		newsTableModel.addRow(new Object[] {"Νέα Προσθήκη", "Νέα Προσθήκη", User.getUserName(users, usernameLabel.getText()), "Νέα Προσθήκη"});
+		postButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String cID = newsTable.getValueAt(newsTable.getSelectedRow(), 0).toString();
+				String title = newsTable.getValueAt(newsTable.getSelectedRow(), 1).toString();
+				String text = newsTable.getValueAt(newsTable.getSelectedRow(), 3).toString();
+				String school = schoolLabel.getText();
+				String id = usernameLabel.getText();
+				Connector.updateNews(cID, school, text, title, id, newsTableModel, users, usernameLabel);
+			}
+		});
+		/*
+		 * Planner table created and filled
+		 */
+		DefaultTableModel plannerTableModel = new DefaultTableModel(new Object[] {"Όνομα Γεγονότος", "Ημερομηνία", "Ώρα", "Περιγραφή"}, 0);
+		plannerTable = new JTable(Connector.getPlans(usernameLabel.getText(), plannerTableModel)) {
+			public String getToolTipText(MouseEvent e) {
+		        String tip = null;
+		        java.awt.Point p = e.getPoint();
+		        int rowIndex = rowAtPoint(p);
+		        int colIndex = columnAtPoint(p);
+		        int realColumnIndex = convertColumnIndexToModel(colIndex);
+		        tip = (String) newsTableModel.getValueAt(rowIndex, colIndex);
+		        		
+		        return tip;
+			}
+			
+		};
+		saveButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Connector.setPlans(plannerTable.getValueAt(plannerTable.getSelectedRow(), 0).toString(), plannerTable.getValueAt(plannerTable.getSelectedRow(), 1).toString(), 
+						plannerTable.getValueAt(plannerTable.getSelectedRow(), 2).toString(), plannerTable.getValueAt(plannerTable.getSelectedRow(), 3).toString(),
+						Connector.getPlanFree(), plannerTableModel);
+			}
+		});
 		/*
 		 * More buttons and panels get created
 		 */
 		editButton.setBounds(222, 462, 232, 27);
 		gradePanel.add(editButton);
+		
+		scrollPane_5 = new JScrollPane(plannerTable);
+		scrollPane_5.setBounds(10, 11, 665, 440);
+		plannerPanel.add(scrollPane_5);
 		
 		scrollPane_4 = new JScrollPane(newsTable);
 		scrollPane_4.setBounds(10, 11, 665, 440);
