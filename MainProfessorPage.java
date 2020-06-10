@@ -77,7 +77,7 @@ public class MainProfessorPage extends JFrame {
 					}
 				}
 			}
-			rsr.close();
+			Connector.close(rsr);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

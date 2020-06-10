@@ -173,7 +173,7 @@ public class MainSecretaryPage extends JFrame {
 							newCourse.getSemester(), newCourse.getId()});
 				}
 			}
-			rsr.close();
+			Connector.close(rsr);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -193,6 +193,7 @@ public class MainSecretaryPage extends JFrame {
 					}
 				}
 			}
+			Connector.close(rsr);
 		} catch (SQLException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -259,6 +260,7 @@ public class MainSecretaryPage extends JFrame {
 			while(rsr.next()) {
 				requestTableModel.addRow(new Object[] {rsr.getString("id"), rsr.getString("request1"), rsr.getString("request2")});
 			}
+			Connector.close(rsr);
 		} catch (SQLException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

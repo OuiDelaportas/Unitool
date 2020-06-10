@@ -154,6 +154,7 @@ public class Connector {
 			while(rsr.next()) {
 				gr = rsr.getString("grade");
 			}
+			rsr.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -165,14 +166,16 @@ public class Connector {
      */
     public static void updateForms(ArrayList <String> courses) {
     	int rowCounter = 0;
+    	PreparedStatement stmt = null;
 		try {
 			for(String i: courses) {
 				rowCounter++;
-				PreparedStatement stmt = connection.prepareStatement("UPDATE forms SET course" + rowCounter +"=? WHERE id=?");
+				stmt = connection.prepareStatement("UPDATE forms SET course" + rowCounter +"=? WHERE id=?");
 				stmt.setString(1, i);
 				stmt.setString(2, ID);
 				stmt.executeUpdate();
 			}
+			close(stmt);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -183,14 +186,17 @@ public class Connector {
      */
     public static void updateRequests(String button, String school, String text, int i) {
     	int rowCounter = 0;
+    	PreparedStatement stmt;
 		try {
-				PreparedStatement stmt = connection.prepareStatement("UPDATE requests SET school=?, request?=?, info=? WHERE id=?");
+				stmt = connection.prepareStatement("UPDATE requests SET school=?, request?=?, info=? WHERE id=?");
 				stmt.setString(1, school);
 				stmt.setInt(2, i);
 				stmt.setString(3, button);
 				stmt.setString(4, text);
 				stmt.setString(5, ID);
 				stmt.executeUpdate();
+				
+				close(stmt);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -233,6 +239,8 @@ public class Connector {
 			stmt.setString(2, id);
 			stmt.setString(3, Course.getCourseID(courses, cName));
 			stmt.executeUpdate();
+			
+			close(stmt);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -246,11 +254,7 @@ public class Connector {
 			PreparedStatement stmt = connection.prepareStatement("SELECT * FROM news WHERE school=?");
 			stmt.setString(1, school);
 			rsr = stmt.executeQuery();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	try {
+
 			while(rsr.next()) {
 				if(schoolLabel.getText().equals(rsr.getString("school"))) {
 					if(!((rsr.getString("course_id").equals(null) || rsr.getString("course_id").equals("")) && (rsr.getString("school").equals(null) || 
@@ -261,6 +265,8 @@ public class Connector {
 					}
 				}
 			}
+			close(rsr);
+			close(stmt);
 		} catch (SQLException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -272,14 +278,17 @@ public class Connector {
      */
     public static DefaultTableModel updateNews(String cID, String school, String text, String title, String id, 
     		DefaultTableModel newsTableModel, ArrayList <User> users, JLabel usernameLabel) {
+    	PreparedStatement stmt;
     	try {
-			PreparedStatement stmt = connection.prepareStatement("UPDATE news SET course_id=?, school=?, text=?, title=? WHERE user_id=?");
+			stmt = connection.prepareStatement("UPDATE news SET course_id=?, school=?, text=?, title=? WHERE user_id=?");
 			stmt.setString(1, cID);
 			stmt.setString(2, school);
 			stmt.setString(3, text);
 			stmt.setString(4, title);
 			stmt.setString(5, id);
 			stmt.executeUpdate();
+			
+			close(stmt);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -291,14 +300,18 @@ public class Connector {
      * Fetches data from planner table
      */
     public static DefaultTableModel getPlans(String id, DefaultTableModel plannerTableModel) {
+    	PreparedStatement stmt;
     	try {
-    		PreparedStatement stmt = connection.prepareStatement("SELECT * FROM planner WHERE id=?");
+    		stmt = connection.prepareStatement("SELECT * FROM planner WHERE id=?");
 			stmt.setString(1, id);
 			rsr = stmt.executeQuery();
 			
 			while(rsr.next()) {
 					plannerTableModel.addRow(new Object[] {rsr.getString("event_name"), rsr.getString("date"), rsr.getString("hour"), rsr.getString("description")});
 			}
+			
+			close(rsr);
+			close(stmt);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -318,6 +331,8 @@ public class Connector {
 	    	stmt.setString(4, desc);
 	    	stmt.setString(5, counter);
 	    	stmt.executeUpdate();
+	    	
+	    	close(stmt);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -340,6 +355,8 @@ public class Connector {
 	    	stmt.setString(7, hour);
 	    	stmt.setString(8, description);
 	    	stmt.executeUpdate();
+	    	
+	    	close(stmt);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -368,6 +385,9 @@ public class Connector {
 					JOptionPane.showMessageDialog(null, "Διάγραψε ένα γεγονός");
 				}
 			}
+			
+			close(rsr);
+			close(stmt);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
