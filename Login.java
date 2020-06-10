@@ -1,7 +1,12 @@
 import java.awt.*; 
 import javax.swing.*;
 import java.awt.event.*;
-
+/*
+ * Σχόλια σχετικα με τις λειτουργιες που δεν υλοποιηθηκαν:
+ * Το chat δεν εχει υλοποιηθει καθως και η λειτουργια για τις εργασιες και τις διαφανειες των μαθηματων. 
+ * 
+ * 
+ */
 public class Login extends JFrame{
 
 	private JFrame frame;
