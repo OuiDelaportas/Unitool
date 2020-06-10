@@ -3,8 +3,9 @@ import javax.swing.*;
 import java.awt.event.*;
 /*
  * Σχόλια σχετικα με τις λειτουργιες που δεν υλοποιηθηκαν:
- * Το chat δεν εχει υλοποιηθει καθως και η λειτουργια για τις εργασιες και τις διαφανειες των μαθηματων. 
- * 
+ * Το chat δεν εχει υλοποιηθει καθως και η λειτουργια για τις εργασιες και τις διαφανειες των μαθηματων λογω δυσκολιας στη διαδικασια παραγωγης αποτελεσματων. 
+ * Επισης δεν εχει υλοποιηθει το link για την ιστοσελιδα του ευδοξου καθως ειναι πιο λογικο να μπαινει μονος του ο φοιτητης 
+ * οπως επισης και το εξαμηνιαιο προγραμμα καθως αυτο το στελνει η γραμματεια με mail.
  * 
  */
 public class Login extends JFrame{
@@ -115,6 +116,7 @@ public class Login extends JFrame{
 					MainStudentPage studPage = new MainStudentPage();
 					studPage.setTitle("Unitool");
 					studPage.setVisible(true);
+					studPage.setDefaultCloseOperation(EXIT_ON_CLOSE);
 					studPage.addWindowListener(new WindowAdapter()
 					{
 					    @Override
@@ -132,6 +134,7 @@ public class Login extends JFrame{
 					MainProfessorPage profPage = new MainProfessorPage();
 					profPage.setTitle("Unitool");
 					profPage.setVisible(true);
+					profPage.setDefaultCloseOperation(EXIT_ON_CLOSE);
 					profPage.addWindowListener(new WindowAdapter()
 					{
 					    @Override
@@ -149,17 +152,15 @@ public class Login extends JFrame{
 					MainSecretaryPage secPage = new MainSecretaryPage();
 					secPage.setTitle("Unitool");
 					secPage.setVisible(true);
+					secPage.setDefaultCloseOperation(EXIT_ON_CLOSE);
 					secPage.addWindowListener(new WindowAdapter()
 					{
 					    @Override
 					    public void windowClosing(WindowEvent e)
-					    {
-					        super.windowClosing(e);
-					        Connector.close();
-					    }
+					    { 	super.windowClosing(e);
+					        Connector.close();}
 					});
-				}else if(userType.equals("")){
-					JOptionPane.showMessageDialog(null, "Error on login!\nPlease try again!");
+				}else if(userType.equals("")){JOptionPane.showMessageDialog(null, "Error on login!\nPlease try again!");
 				}
 					
 			} catch (Exception e1) {
